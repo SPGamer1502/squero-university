@@ -17,7 +17,7 @@ export default async function DashboardPage() {
   const { data: profile } = await supabase.from('profiles').select('*, careers(name)').eq('id', user.id).single()
   const { data: faculties } = await supabase.from('faculties').select('*, careers(*)')
 
-  // ADMIN DASHBOARD
+  // ========== ADMIN DASHBOARD ==========
   if (profile?.role === 'admin') {
     return (
       <div>
@@ -54,15 +54,15 @@ export default async function DashboardPage() {
               <h3 style={{ color: '#1a365d', fontSize: '18px' }}>Gestionar Alumnos</h3>
               <p style={{ color: '#6b7280', fontSize: '14px' }}>Asignar carreras y ciclos</p>
             </Link>
-            <Link href="/courses" className="card" style={{ textDecoration: 'none' }}>
-              <div style={{ fontSize: '32px', marginBottom: '0.5rem' }}>📚</div>
-              <h3 style={{ color: '#1a365d', fontSize: '18px' }}>Todos los Cursos</h3>
-              <p style={{ color: '#6b7280', fontSize: '14px' }}>Ver catálogo completo</p>
-            </Link>
             <Link href="/admin/professors" className="card" style={{ textDecoration: 'none' }}>
               <div style={{ fontSize: '32px', marginBottom: '0.5rem' }}>👨‍🏫</div>
               <h3 style={{ color: '#1a365d', fontSize: '18px' }}>Gestionar Profesores</h3>
               <p style={{ color: '#6b7280', fontSize: '14px' }}>Asignar profesores a cursos</p>
+            </Link>
+            <Link href="/courses" className="card" style={{ textDecoration: 'none' }}>
+              <div style={{ fontSize: '32px', marginBottom: '0.5rem' }}>📚</div>
+              <h3 style={{ color: '#1a365d', fontSize: '18px' }}>Todos los Cursos</h3>
+              <p style={{ color: '#6b7280', fontSize: '14px' }}>Ver catálogo completo</p>
             </Link>
           </div>
 
@@ -85,7 +85,25 @@ export default async function DashboardPage() {
     )
   }
 
-  // PROFESOR DASHBOARD
+  // ========== PROFESOR NO APROBADO ==========
+  if (profile?.role === 'profesor' && !profile?.approved) {
+    return (
+      <div className="container" style={{ textAlign: 'center', padding: '4rem' }}>
+        <div className="card" style={{ maxWidth: '500px', margin: '0 auto' }}>
+          <div className="empty-state-icon">⏳</div>
+          <h2 style={{ color: '#92400e', fontSize: '20px' }}>Cuenta pendiente de asignación</h2>
+          <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
+            El administrador te asignará a tus cursos pronto.
+          </p>
+          <div className="alert alert-warning" style={{ marginTop: '1rem' }}>
+            Recibirás acceso cuando el admin te asigne a un curso.
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ========== PROFESOR APROBADO ==========
   if (profile?.role === 'profesor') {
     const { data: profCourses } = await supabase.from('professor_assignments')
       .select('*, courses(*, careers(name))').eq('professor_id', user.id)
@@ -143,7 +161,7 @@ export default async function DashboardPage() {
     )
   }
 
-  // ALUMNO NO APROBADO
+  // ========== ALUMNO NO APROBADO ==========
   if (profile?.role === 'alumno' && !profile?.approved) {
     return (
       <div className="container" style={{ textAlign: 'center', padding: '4rem' }}>
@@ -161,7 +179,7 @@ export default async function DashboardPage() {
     )
   }
 
-  // ALUMNO APROBADO
+  // ========== ALUMNO APROBADO ==========
   const { data: enrollments } = await supabase.from('enrollments').select('*, courses(*)').eq('user_id', user.id)
 
   return (
