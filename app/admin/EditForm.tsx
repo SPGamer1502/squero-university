@@ -19,7 +19,7 @@ export default function EditForm({ assignmentId, studentId, currentCareerId, cur
   const supabase = createClient()
   const router = useRouter()
 
-  const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
