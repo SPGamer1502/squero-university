@@ -11,7 +11,7 @@ export default async function CoursesPage() {
   if (profile?.role === 'admin' || profile?.role === 'profesor') {
     const { data } = await supabase.from('courses').select('*, careers(name)').order('career_id').order('cycle')
     courses = data || []
-  } else if (profile?.role === 'alumno' && profile?.career_id) {
+  } else if (profile?.role === 'alumno' && profile?.career_id && profile?.cycle) {
     const { data } = await supabase.from('courses')
       .select('*, careers(name)')
       .eq('career_id', profile.career_id)
@@ -19,6 +19,11 @@ export default async function CoursesPage() {
       .order('name')
     courses = data || []
   }
+
+  // ELIMINAR DUPLICADOS POR ID
+  const uniqueCourses = Array.from(
+    new Map(courses.map(course => [course.id, course])).values()
+  )
 
   return (
     <div>
@@ -46,11 +51,11 @@ export default async function CoursesPage() {
         
         <div className="page-header">
           <h1>{profile?.role === 'alumno' ? '📚 Mis Cursos' : '📚 Todos los Cursos'}</h1>
-          <p>{profile?.role === 'alumno' ? `${profile?.careers?.name} · Ciclo ${profile?.cycle}` : 'Catálogo completo'}</p>
+          <p>{profile?.role === 'alumno' ? `${profile?.careers?.name} · Ciclo ${profile?.cycle} · ${uniqueCourses.length} cursos` : 'Catálogo completo'}</p>
         </div>
 
         <div className="grid" style={{ gap: '0.75rem' }}>
-          {courses.map((course: any) => (
+          {uniqueCourses.map((course: any) => (
             <Link href={`/courses/${course.id}`} key={course.id} className="course-item" style={{ textDecoration: 'none' }}>
               <div>
                 <strong style={{ fontSize: '16px', color: '#1f2937' }}>{course.name}</strong>
@@ -64,7 +69,7 @@ export default async function CoursesPage() {
               </div>
             </Link>
           ))}
-          {courses.length === 0 && (
+          {uniqueCourses.length === 0 && (
             <div className="empty-state">
               <div className="empty-state-icon">📭</div>
               <p>No tienes cursos asignados.</p>
