@@ -59,6 +59,11 @@ export default async function DashboardPage() {
               <h3 style={{ color: '#1a365d', fontSize: '18px' }}>Todos los Cursos</h3>
               <p style={{ color: '#6b7280', fontSize: '14px' }}>Ver catálogo completo</p>
             </Link>
+            <Link href="/admin/professors" className="card" style={{ textDecoration: 'none' }}>
+              <div style={{ fontSize: '32px', marginBottom: '0.5rem' }}>👨‍🏫</div>
+              <h3 style={{ color: '#1a365d', fontSize: '18px' }}>Gestionar Profesores</h3>
+              <p style={{ color: '#6b7280', fontSize: '14px' }}>Asignar profesores a cursos</p>
+            </Link>
           </div>
 
           <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#1a365d', marginBottom: '1rem' }}>🏛️ Facultades y Carreras</h2>
@@ -75,6 +80,64 @@ export default async function DashboardPage() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    )
+  }
+
+  // PROFESOR DASHBOARD
+  if (profile?.role === 'profesor') {
+    const { data: profCourses } = await supabase.from('professor_assignments')
+      .select('*, courses(*, careers(name))').eq('professor_id', user.id)
+
+    return (
+      <div>
+        <nav className="navbar">
+          <div className="navbar-brand">
+            <div className="navbar-brand-icon">🎓</div>
+            <div>
+              <div className="navbar-brand-text">SqueroUniversity</div>
+              <div className="navbar-brand-subtext">UNICA - Profesor</div>
+            </div>
+          </div>
+          <div className="navbar-user">
+            <div className="navbar-user-info">
+              <div className="navbar-user-name">{profile?.full_name}</div>
+              <div className="navbar-user-role">Profesor</div>
+            </div>
+            <form action="/auth/logout" method="post">
+              <button type="submit" className="btn btn-sm" style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}>
+                🚪 Salir
+              </button>
+            </form>
+          </div>
+        </nav>
+
+        <div className="container">
+          <div className="page-header" style={{ background: 'linear-gradient(135deg, #7c3aed, #5b21b6)' }}>
+            <h1>👨‍🏫 Mis Cursos</h1>
+            <p>Profesor: {profile?.full_name}</p>
+          </div>
+
+          <div className="grid grid-2">
+            {profCourses?.map((pc: any) => (
+              <Link href={`/courses/${pc.courses.id}`} key={pc.id} className="card" style={{ textDecoration: 'none' }}>
+                <div style={{ fontSize: '28px', marginBottom: '0.5rem' }}>📖</div>
+                <strong style={{ fontSize: '18px', color: '#1f2937' }}>{pc.courses.name}</strong>
+                <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '4px' }}>
+                  {pc.courses.code} · {pc.courses.careers?.name} · Ciclo {pc.courses.cycle}
+                </p>
+                <span className="badge badge-primary" style={{ marginTop: '8px', display: 'inline-block' }}>Ver curso →</span>
+              </Link>
+            ))}
+            {(!profCourses || profCourses.length === 0) && (
+              <div className="empty-state">
+                <div className="empty-state-icon">📭</div>
+                <p>No tienes cursos asignados todavía.</p>
+                <p style={{ fontSize: '14px', color: '#9ca3af' }}>El administrador te asignará cursos pronto.</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     )
