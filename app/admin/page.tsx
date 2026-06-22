@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import AssignForm from './Assignform'
+import EditForm from './EditForm'
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -46,27 +47,40 @@ export default async function AdminPage() {
       <div className="container">
         <div className="page-header" style={{ background: 'linear-gradient(135deg, #991b1b, #7f1d1d)' }}>
           <h1>🔧 Gestión de Alumnos</h1>
-          <p>Asigna carreras y ciclos a los estudiantes registrados</p>
+          <p>Asigna, edita y administra carreras y ciclos</p>
         </div>
 
-        <div className="grid grid-2">
-          <div className="card">
-            <div className="card-header">✅ Alumnos Asignados ({assignments?.length || 0})</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '400px', overflowY: 'auto' }}>
-              {assignments?.map((a: any) => (
-                <div key={a.id} style={{ background: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
-                  <strong>👤 {a.profiles?.full_name}</strong>
-                  <span style={{ color: '#6b7280', marginLeft: '8px' }}>→ {a.careers?.name} | Ciclo {a.cycle}</span>
+        {/* ALUMNOS ASIGNADOS */}
+        <div className="card" style={{ marginBottom: '1.5rem' }}>
+          <div className="card-header">✅ Alumnos Asignados ({assignments?.length || 0})</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '500px', overflowY: 'auto' }}>
+            {assignments?.map((a: any) => (
+              <div key={a.id} style={{ background: '#f0fdf4', padding: '16px', borderRadius: '8px', border: '1px solid #bbf7d0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <strong style={{ fontSize: '16px' }}>👤 {a.profiles?.full_name}</strong>
+                  <span style={{ color: '#6b7280', marginLeft: '12px' }}>
+                    📚 {a.careers?.name} · 🎯 Ciclo {a.cycle}
+                  </span>
                 </div>
-              ))}
-              {assignments?.length === 0 && <p style={{ color: '#9ca3af', fontStyle: 'italic' }}>No hay alumnos asignados todavía.</p>}
-            </div>
+                <EditForm 
+                  assignmentId={a.id} 
+                  studentId={a.student_id} 
+                  currentCareerId={a.career_id} 
+                  currentCycle={a.cycle} 
+                  careers={careers || []} 
+                />
+              </div>
+            ))}
+            {(!assignments || assignments.length === 0) && (
+              <p style={{ color: '#9ca3af', fontStyle: 'italic', textAlign: 'center', padding: '1rem' }}>No hay alumnos asignados todavía.</p>
+            )}
           </div>
+        </div>
 
-          <div className="card">
-            <div className="card-header">📋 Nueva Asignación</div>
-            <AssignForm students={students || []} careers={careers || []} />
-          </div>
+        {/* NUEVA ASIGNACIÓN */}
+        <div className="card">
+          <div className="card-header">📋 Nueva Asignación</div>
+          <AssignForm students={students || []} careers={careers || []} />
         </div>
       </div>
     </div>
