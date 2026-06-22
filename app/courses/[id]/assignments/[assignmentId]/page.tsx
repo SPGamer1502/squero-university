@@ -29,6 +29,14 @@ export default async function AssignmentPage({ params }: { params: { id: string;
         <p style={{ color: '#6b7280', margin: '10px 0' }}>{assignment?.description}</p>
         <p><strong>📅 Fecha límite:</strong> {new Date(assignment?.due_date).toLocaleString('es-PE')}</p>
         {isLate && <p style={{ color: 'red', fontWeight: 'bold' }}>⚠️ Tarea vencida</p>}
+        {(profile?.role === 'admin' || profile?.role === 'profesor') && (
+  <Link href={`/courses/${params.id}/assignments/${params.assignmentId}/submissions`} style={{
+    display: 'inline-block', marginTop: '10px', backgroundColor: '#8b5cf6', color: 'white',
+    padding: '8px 16px', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold'
+  }}>
+    📋 Ver entregas de alumnos
+  </Link>
+)}
         {fileUrl && (
           <a href={fileUrl} target="_blank" style={{ color: '#2563eb', fontWeight: 'bold' }}>📎 Ver archivo adjunto del profesor</a>
         )}
