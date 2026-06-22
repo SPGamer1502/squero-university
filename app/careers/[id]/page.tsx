@@ -1,13 +1,11 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
-import EnrollButton from './EnrollButton'
 
 export default async function CareerPage({ params }: { params: { id: string } }) {
   const supabase = await createClient()
   
   const { data: career } = await supabase.from('careers').select('*, faculties(name)').eq('id', params.id).single()
   const { data: courses } = await supabase.from('courses').select('*').eq('career_id', params.id).order('cycle', { ascending: true })
-  const { data: { user } } = await supabase.auth.getUser()
 
   const coursesByCycle: { [key: number]: any[] } = {}
   courses?.forEach(course => {
@@ -16,36 +14,56 @@ export default async function CareerPage({ params }: { params: { id: string } })
   })
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <Link href="/dashboard" style={{ color: '#2563eb', textDecoration: 'none' }}>← Volver al inicio</Link>
-      </div>
-      
-      <div style={{ backgroundColor: '#1e40af', color: 'white', padding: '1.5rem 2rem', borderRadius: '10px', marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '28px', margin: '0' }}>📖 {career?.name}</h1>
-        <p style={{ margin: '5px 0 0 0', opacity: '0.9' }}>{(career as any)?.faculties?.name}</p>
-      </div>
-
-      {[1, 2].map(cycle => (
-        <div key={cycle} style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontSize: '22px', color: '#1e40af', marginBottom: '1rem' }}>📅 Ciclo {cycle}</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {coursesByCycle[cycle]?.map((course: any) => (
-              <div key={course.id} style={{
-                backgroundColor: '#f9fafb', padding: '1rem', borderRadius: '8px',
-                border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-              }}>
-                <div>
-                  <strong style={{ fontSize: '16px' }}>{course.name}</strong>
-                  <span style={{ color: '#6b7280', marginLeft: '10px', fontSize: '14px' }}>{course.code}</span>
-                  <p style={{ color: '#9ca3af', margin: '4px 0 0 0', fontSize: '13px' }}>{course.description}</p>
-                </div>
-                {user && <EnrollButton courseId={course.id} />}
-              </div>
-            ))}
-          </div>
+    <div>
+      <nav className="navbar">
+        <div className="navbar-brand">
+          <a href="/dashboard" className="navbar-brand" style={{ textDecoration: 'none' }}>
+            <div className="navbar-brand-icon">🎓</div>
+            <div>
+              <div className="navbar-brand-text">SqueroUniversity</div>
+              <div className="navbar-brand-subtext">UNICA</div>
+            </div>
+          </a>
         </div>
-      ))}
+        <div className="navbar-user">
+          <form action="/auth/logout" method="post">
+            <button type="submit" className="btn btn-sm" style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}>
+              🚪 Salir
+            </button>
+          </form>
+        </div>
+      </nav>
+
+      <div className="container">
+        <Link href="/dashboard" className="link" style={{ display: 'inline-block', marginBottom: '1rem' }}>← Volver al inicio</Link>
+        
+        <div className="page-header">
+          <h1>📖 {career?.name}</h1>
+          <p>{(career as any)?.faculties?.name}</p>
+        </div>
+
+        {[1, 2].map(cycle => (
+          <div key={cycle} className="card" style={{ marginBottom: '1.5rem' }}>
+            <div className="card-header">📅 Ciclo {cycle}</div>
+            <div className="grid" style={{ gap: '0.75rem' }}>
+              {coursesByCycle[cycle]?.map((course: any) => (
+                <Link href={`/courses/${course.id}`} key={course.id} className="course-item" style={{ textDecoration: 'none' }}>
+                  <div>
+                    <strong style={{ fontSize: '16px', color: '#1f2937' }}>{course.name}</strong>
+                    <p style={{ color: '#9ca3af', fontSize: '13px', margin: '2px 0 0 0' }}>{course.description}</p>
+                  </div>
+                  <span className="course-item-code">{course.code}</span>
+                </Link>
+              ))}
+              {(!coursesByCycle[cycle] || coursesByCycle[cycle].length === 0) && (
+                <div className="empty-state">
+                  <p>No hay cursos disponibles en este ciclo.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

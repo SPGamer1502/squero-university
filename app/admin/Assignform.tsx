@@ -8,11 +8,13 @@ export default function AssignForm({ students, careers }: { students: any[], car
   const [careerId, setCareerId] = useState('')
   const [cycle, setCycle] = useState('1')
   const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
   const supabase = createClient()
   const router = useRouter()
 
-  const handleAssign = async (e: React.FormEvent) => {
+  const handleAssign = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setLoading(true)
     setMessage('')
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
@@ -25,7 +27,7 @@ export default function AssignForm({ students, careers }: { students: any[], car
     })
 
     if (error) {
-      setMessage('❌ Error: ' + error.message)
+      setMessage('Error: ' + error.message)
     } else {
       setMessage('✅ Alumno asignado correctamente. Ya puede ver sus cursos.')
       setStudentId('')
@@ -33,41 +35,50 @@ export default function AssignForm({ students, careers }: { students: any[], car
       setCycle('1')
       router.refresh()
     }
+    setLoading(false)
   }
 
-  const unassignedStudents = students.filter(s => !s.approved)
+  const unassignedStudents = students.filter((s: any) => !s.approved)
 
   return (
     <form onSubmit={handleAssign}>
-      {message && <p style={{ marginBottom: '1rem', padding: '10px', borderRadius: '6px', backgroundColor: message.includes('✅') ? '#dcfce7' : '#fee2e2' }}>{message}</p>}
+      {message !== '' && (
+        <div className={message.includes('✅') ? 'alert alert-success' : 'alert alert-error'}>{message}</div>
+      )}
       
-      <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Alumno</label>
-      <select value={studentId} onChange={e => setStudentId(e.target.value)} required
-        style={{ width: '100%', padding: '10px', marginBottom: '12px', marginTop: '4px', border: '1px solid #d1d5db', borderRadius: '4px' }}>
-        <option value="">Seleccionar alumno...</option>
-        {unassignedStudents.map(s => (
-          <option key={s.id} value={s.id}>{s.full_name} ({s.email || 'sin correo'})</option>
-        ))}
-      </select>
+      <div className="form-group">
+        <label className="form-label">Alumno</label>
+        <select value={studentId} onChange={e => setStudentId(e.target.value)} className="form-select" required>
+          <option value="">Seleccionar alumno...</option>
+          {unassignedStudents.map((s: any) => (
+            <option key={s.id} value={s.id}>{s.full_name}</option>
+          ))}
+        </select>
+        {unassignedStudents.length === 0 && (
+          <p style={{ color: '#9ca3af', fontSize: '13px', marginTop: '4px' }}>No hay alumnos pendientes de asignación.</p>
+        )}
+      </div>
 
-      <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Carrera</label>
-      <select value={careerId} onChange={e => setCareerId(e.target.value)} required
-        style={{ width: '100%', padding: '10px', marginBottom: '12px', marginTop: '4px', border: '1px solid #d1d5db', borderRadius: '4px' }}>
-        <option value="">Seleccionar carrera...</option>
-        {careers.map(c => (
-          <option key={c.id} value={c.id}>{c.name}</option>
-        ))}
-      </select>
+      <div className="form-group">
+        <label className="form-label">Carrera</label>
+        <select value={careerId} onChange={e => setCareerId(e.target.value)} className="form-select" required>
+          <option value="">Seleccionar carrera...</option>
+          {careers.map((c: any) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </div>
 
-      <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Ciclo</label>
-      <select value={cycle} onChange={e => setCycle(e.target.value)} required
-        style={{ width: '100%', padding: '10px', marginBottom: '20px', marginTop: '4px', border: '1px solid #d1d5db', borderRadius: '4px' }}>
-        <option value="1">Ciclo I</option>
-        <option value="2">Ciclo II</option>
-      </select>
+      <div className="form-group">
+        <label className="form-label">Ciclo</label>
+        <select value={cycle} onChange={e => setCycle(e.target.value)} className="form-select" required>
+          <option value="1">Ciclo I</option>
+          <option value="2">Ciclo II</option>
+        </select>
+      </div>
 
-      <button type="submit" style={{ width: '100%', padding: '12px', backgroundColor: '#991b1b', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
-        Asignar carrera y ciclo
+      <button type="submit" disabled={loading} className="btn btn-danger" style={{ width: '100%', justifyContent: 'center' }}>
+        {loading ? 'Asignando...' : '📋 Asignar carrera y ciclo'}
       </button>
     </form>
   )

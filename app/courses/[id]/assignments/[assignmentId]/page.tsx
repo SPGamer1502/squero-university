@@ -21,51 +21,83 @@ export default async function AssignmentPage({ params }: { params: { id: string;
   const isLate = assignment ? new Date() > new Date(assignment.due_date) : false
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <Link href={`/courses/${params.id}`} style={{ color: '#2563eb', textDecoration: 'none' }}>← Volver al curso</Link>
-      
-      <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '10px', marginTop: '1rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h1 style={{ fontSize: '26px', color: '#1e40af' }}>📝 {assignment?.title}</h1>
-        <p style={{ color: '#6b7280', margin: '10px 0' }}>{assignment?.description}</p>
-        <p><strong>📅 Fecha límite:</strong> {new Date(assignment?.due_date).toLocaleString('es-PE')}</p>
-        {isLate && <p style={{ color: 'red', fontWeight: 'bold' }}>⚠️ Tarea vencida</p>}
-        {(profile?.role === 'admin' || profile?.role === 'profesor') && (
-  <Link href={`/courses/${params.id}/assignments/${params.assignmentId}/submissions`} style={{
-    display: 'inline-block', marginTop: '10px', backgroundColor: '#8b5cf6', color: 'white',
-    padding: '8px 16px', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold'
-  }}>
-    📋 Ver entregas de alumnos
-  </Link>
-)}
-        {fileUrl && (
-          <a href={fileUrl} target="_blank" style={{ color: '#2563eb', fontWeight: 'bold' }}>📎 Ver archivo adjunto del profesor</a>
+    <div>
+      <nav className="navbar">
+        <div className="navbar-brand">
+          <a href="/dashboard" className="navbar-brand" style={{ textDecoration: 'none' }}>
+            <div className="navbar-brand-icon">🎓</div>
+            <div>
+              <div className="navbar-brand-text">SqueroUniversity</div>
+              <div className="navbar-brand-subtext">UNICA</div>
+            </div>
+          </a>
+        </div>
+        <div className="navbar-user">
+          <form action="/auth/logout" method="post">
+            <button type="submit" className="btn btn-sm" style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}>
+              🚪 Salir
+            </button>
+          </form>
+        </div>
+      </nav>
+
+      <div className="container">
+        <Link href={`/courses/${params.id}`} className="link" style={{ display: 'inline-block', marginBottom: '1rem' }}>← Volver al curso</Link>
+        
+        <div className="page-header">
+          <h1>📝 {assignment?.title}</h1>
+          <p>{assignment?.description}</p>
+          <p style={{ marginTop: '8px' }}>
+            📅 <strong>Fecha límite:</strong> {new Date(assignment?.due_date).toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          </p>
+          {isLate && <span className="badge badge-danger" style={{ marginTop: '8px', display: 'inline-block' }}>⚠️ Tarea vencida</span>}
+          {fileUrl && (
+            <div style={{ marginTop: '1rem' }}>
+              <a href={fileUrl} target="_blank" className="btn btn-outline btn-sm">📎 Descargar archivo del profesor</a>
+            </div>
+          )}
+          {(profile?.role === 'admin' || profile?.role === 'profesor') && (
+            <div style={{ marginTop: '1rem' }}>
+              <Link href={`/courses/${params.id}/assignments/${params.assignmentId}/submissions`} className="btn btn-warning btn-sm">
+                📋 Ver entregas de alumnos
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {profile?.role === 'alumno' && !submission && !isLate && (
+          <div className="card" style={{ marginTop: '1.5rem' }}>
+            <div className="card-header">📤 Subir entrega</div>
+            <SubmissionForm assignmentId={params.assignmentId} />
+          </div>
+        )}
+
+        {submission && (
+          <div className="card" style={{ marginTop: '1.5rem', border: '2px solid #bbf7d0' }}>
+            <div className="card-header" style={{ color: '#065f46' }}>✅ Entrega realizada</div>
+            <p style={{ color: '#6b7280', marginBottom: '0.5rem' }}>
+              📅 Entregado el {new Date(submission.submitted_at).toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            </p>
+            {submissionUrl && <a href={submissionUrl} target="_blank" className="btn btn-outline btn-sm">📎 Ver mi archivo entregado</a>}
+            {submission.grade !== null && (
+              <div style={{ marginTop: '1rem', padding: '1rem', background: '#f0fdf4', borderRadius: '8px' }}>
+                <p><strong>🎯 Nota:</strong> <span style={{ fontSize: '24px', fontWeight: 800, color: '#059669' }}>{submission.grade}/10</span></p>
+                {submission.feedback && <p><strong>💬 Comentario del profesor:</strong> {submission.feedback}</p>}
+              </div>
+            )}
+          </div>
+        )}
+
+        {!submission && isLate && profile?.role === 'alumno' && (
+          <div className="card" style={{ marginTop: '1.5rem', border: '2px solid #fecaca' }}>
+            <div className="empty-state">
+              <div className="empty-state-icon">❌</div>
+              <h3 style={{ color: '#991b1b' }}>No entregaste a tiempo</h3>
+              <p style={{ color: '#6b7280' }}>La fecha límite ya venció.</p>
+            </div>
+          </div>
         )}
       </div>
-
-      {/* Si es alumno y no ha entregado y no está vencida */}
-      {profile?.role === 'alumno' && !submission && !isLate && (
-        <div style={{ marginTop: '1.5rem' }}>
-          <SubmissionForm assignmentId={params.assignmentId} />
-        </div>
-      )}
-
-      {/* Si ya entregó */}
-      {submission && (
-        <div style={{ backgroundColor: '#dcfce7', padding: '1.5rem', borderRadius: '10px', marginTop: '1.5rem' }}>
-          <h3 style={{ color: '#166534' }}>✅ Ya entregaste tu tarea</h3>
-          {submissionUrl && <a href={submissionUrl} target="_blank" style={{ color: '#2563eb' }}>📎 Ver mi entrega</a>}
-          <p>📅 Entregado: {new Date(submission.submitted_at).toLocaleString('es-PE')}</p>
-          {submission.grade !== null && <p><strong>🎯 Nota:</strong> {submission.grade}/10</p>}
-          {submission.feedback && <p><strong>💬 Comentario:</strong> {submission.feedback}</p>}
-        </div>
-      )}
-
-      {/* Si no entregó y ya venció */}
-      {!submission && isLate && profile?.role === 'alumno' && (
-        <div style={{ backgroundColor: '#fee2e2', padding: '1.5rem', borderRadius: '10px', marginTop: '1.5rem' }}>
-          <p style={{ color: '#991b1b' }}>❌ No entregaste a tiempo. La fecha límite ya pasó.</p>
-        </div>
-      )}
     </div>
   )
 }

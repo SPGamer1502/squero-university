@@ -8,23 +8,25 @@ export default function CreateAssignmentPage({ params }: { params: { id: string 
   const [description, setDescription] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [file, setFile] = useState<File | null>(null)
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setLoading(true)
     let fileUrl = ''
     
     if (file) {
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('assignment-files')
         .upload(`${params.id}/${Date.now()}-${file.name}`, file)
-      if (uploadError) { alert(uploadError.message); return }
+      if (uploadError) { alert(uploadError.message); setLoading(false); return }
       fileUrl = uploadData?.path || ''
     }
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { setLoading(false); return }
 
     const { error } = await supabase.from('assignments').insert({
       course_id: parseInt(params.id),
@@ -36,37 +38,49 @@ export default function CreateAssignmentPage({ params }: { params: { id: string 
     })
 
     if (!error) {
-      alert('Tarea creada con éxito')
+      alert('✅ Tarea creada con éxito')
       router.push(`/courses/${params.id}`)
     } else {
       alert('Error: ' + error.message)
     }
+    setLoading(false)
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '24px', marginBottom: '1.5rem', color: '#1e40af' }}>📝 Nueva tarea</h1>
-      <form onSubmit={handleSubmit} style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Título</label>
-        <input placeholder="Ej: Trabajo de investigación" value={title} onChange={e => setTitle(e.target.value)}
-          style={{ width: '100%', padding: '10px', marginBottom: '12px', marginTop: '4px', border: '1px solid #d1d5db', borderRadius: '4px' }} required />
-        
-        <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Descripción</label>
-        <textarea placeholder="Instrucciones de la tarea" value={description} onChange={e => setDescription(e.target.value)}
-          style={{ width: '100%', padding: '10px', marginBottom: '12px', marginTop: '4px', border: '1px solid #d1d5db', borderRadius: '4px', minHeight: '80px' }} />
-        
-        <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Fecha límite</label>
-        <input type="datetime-local" value={dueDate} onChange={e => setDueDate(e.target.value)}
-          style={{ width: '100%', padding: '10px', marginBottom: '12px', marginTop: '4px', border: '1px solid #d1d5db', borderRadius: '4px' }} required />
-        
-        <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Archivo adjunto (opcional)</label>
-        <input type="file" onChange={e => setFile(e.target.files?.[0] || null)}
-          style={{ width: '100%', padding: '10px', marginBottom: '20px', marginTop: '4px' }} />
-        
-        <button type="submit" style={{ width: '100%', padding: '12px', backgroundColor: '#16a34a', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
-          Crear tarea
-        </button>
-      </form>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+      <div style={{ width: '100%', maxWidth: '550px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontSize: '40px', marginBottom: '0.5rem' }}>📝</div>
+          <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#1a365d' }}>Nueva Tarea</h1>
+        </div>
+        <div className="card">
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label">Título de la tarea</label>
+              <input type="text" placeholder="Ej: Trabajo de investigación" value={title} onChange={e => setTitle(e.target.value)}
+                className="form-input" required />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Descripción</label>
+              <textarea placeholder="Instrucciones detalladas..." value={description} onChange={e => setDescription(e.target.value)}
+                className="form-input" style={{ minHeight: '80px' }} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Fecha límite de entrega</label>
+              <input type="datetime-local" value={dueDate} onChange={e => setDueDate(e.target.value)}
+                className="form-input" required />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Archivo adjunto (opcional)</label>
+              <input type="file" onChange={e => setFile(e.target.files?.[0] || null)}
+                className="form-input" />
+            </div>
+            <button type="submit" disabled={loading} className="btn btn-success" style={{ width: '100%', justifyContent: 'center', padding: '12px' }}>
+              {loading ? 'Creando...' : '📤 Crear tarea'}
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   )
 }
