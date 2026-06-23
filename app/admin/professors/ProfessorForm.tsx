@@ -31,8 +31,11 @@ export default function ProfessorForm({ assignmentId, professorId, currentCourse
         professor_id: selectedProfessor,
         course_id: parseInt(selectedCourse)
       })
-      if (error) alert('Error: ' + error.message)
-      else {
+      if (error) {
+        alert('Error: ' + error.message)
+      } else {
+        // ✅ ACTUALIZAR APROBADO A TRUE
+        await supabase.from('profiles').update({ approved: true }).eq('id', selectedProfessor)
         alert('✅ Profesor asignado al curso')
         setSelectedProfessor('')
         setSelectedCourse('')
@@ -56,6 +59,8 @@ export default function ProfessorForm({ assignmentId, professorId, currentCourse
 
   const handleDelete = async () => {
     if (!confirm('¿Eliminar esta asignación?')) return
+    // Quitar aprobación al eliminar
+    await supabase.from('profiles').update({ approved: false }).eq('id', professorId)
     await supabase.from('professor_assignments').delete().eq('id', assignmentId)
     alert('✅ Asignación eliminada')
     router.refresh()
