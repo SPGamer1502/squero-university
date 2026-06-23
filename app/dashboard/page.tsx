@@ -210,7 +210,7 @@ export default async function DashboardPage() {
         <div className="navbar-user">
           <div className="navbar-user-info">
             <div className="navbar-user-name">{profile?.full_name}</div>
-            <div className="navbar-user-role">{profile?.careers?.name} · Ciclo {profile?.cycle}</div>
+            <div className="navbar-user-role">{profile?.careers?.[0]?.name || 'Sin carrera'} · Ciclo {profile?.cycle}</div>
           </div>
           <form action="/auth/logout" method="post">
             <button type="submit" className="btn btn-sm" style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}>
@@ -223,7 +223,7 @@ export default async function DashboardPage() {
       <div className="container">
         <div className="page-header">
           <h1>👋 Bienvenido, {profile?.full_name}</h1>
-          <p>{profile?.careers?.name} · Ciclo {profile?.cycle}</p>
+          <p>{profile?.careers?.[0]?.name || 'Sin carrera'} · Ciclo {profile?.cycle}</p>
         </div>
 
         <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#1a365d', marginBottom: '1rem' }}>📚 Mis Cursos</h2>

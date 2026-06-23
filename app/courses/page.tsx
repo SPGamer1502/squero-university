@@ -57,7 +57,7 @@ export default async function CoursesPage() {
         
         <div className="page-header">
           <h1>{profile?.role === 'alumno' ? '📚 Mis Cursos' : '📚 Todos los Cursos'}</h1>
-          <p>{profile?.role === 'alumno' ? `${profile?.careers?.name} · Ciclo ${profile?.cycle} · ${uniqueCourses.length} cursos` : 'Catálogo completo'}</p>
+          <p>{profile?.role === 'alumno' ? `${profile?.careers?.[0]?.name || 'Sin carrera'} · Ciclo ${profile?.cycle} · ${uniqueCourses.length} cursos` : 'Catálogo completo'}</p>
         </div>
 
         <div className="grid" style={{ gap: '0.75rem' }}>
