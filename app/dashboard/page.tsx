@@ -14,11 +14,25 @@ export default async function DashboardPage() {
     )
   }
 
+  // Obtener perfil con relación a carreras (puede venir vacía)
   const { data: profile } = await supabase
     .from('profiles')
     .select('*, careers(name)')
     .eq('id', user.id)
     .single()
+
+  // Obtener nombre de carrera de forma segura
+  let careerName = 'Sin carrera'
+  if (profile?.careers && profile.careers.length > 0) {
+    careerName = profile.careers[0].name
+  } else if (profile?.career_id) {
+    const { data: careerData } = await supabase
+      .from('careers')
+      .select('name')
+      .eq('id', profile.career_id)
+      .single()
+    careerName = careerData?.name || 'Sin carrera'
+  }
 
   const { data: faculties } = await supabase.from('faculties').select('*, careers(*)')
 
@@ -218,7 +232,7 @@ export default async function DashboardPage() {
           <div className="navbar-user-info">
             <div className="navbar-user-name">{profile?.full_name}</div>
             <div className="navbar-user-role">
-              {profile?.careers?.[0]?.name || 'Sin carrera'} · Ciclo {profile?.cycle}
+              {careerName} · Ciclo {profile?.cycle}
             </div>
           </div>
           <form action="/auth/logout" method="post">
@@ -232,7 +246,7 @@ export default async function DashboardPage() {
       <div className="container">
         <div className="page-header">
           <h1>👋 Bienvenido, {profile?.full_name}</h1>
-          <p>{profile?.careers?.[0]?.name || 'Sin carrera'} · Ciclo {profile?.cycle}</p>
+          <p>{careerName} · Ciclo {profile?.cycle}</p>
         </div>
 
         <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#1a365d', marginBottom: '1rem' }}>📚 Mis Cursos</h2>

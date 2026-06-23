@@ -12,6 +12,19 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
     .eq('id', id)
     .single()
 
+  // Obtener nombre de carrera seguro para el curso
+  let courseCareerName = 'Sin carrera'
+  if (course?.careers && course.careers.length > 0) {
+    courseCareerName = course.careers[0].name
+  } else if (course?.career_id) {
+    const { data: careerData } = await supabase
+      .from('careers')
+      .select('name')
+      .eq('id', course.career_id)
+      .single()
+    courseCareerName = careerData?.name || 'Sin carrera'
+  }
+
   const { data: assignments } = await supabase
     .from('assignments')
     .select('*')
@@ -60,7 +73,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
         
         <div className="page-header">
           <h1>📖 {course?.name}</h1>
-          <p>{course?.careers?.[0]?.name || 'Sin carrera'} · Ciclo {course?.cycle}</p>
+          <p>{courseCareerName} · Ciclo {course?.cycle}</p>
           <p style={{ fontSize: '14px', marginTop: '4px' }}>{course?.description}</p>
         </div>
 

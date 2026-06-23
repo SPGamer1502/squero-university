@@ -10,6 +10,19 @@ export default async function CoursesPage() {
     .eq('id', user?.id)
     .single()
 
+  // Obtener nombre de carrera seguro
+  let careerName = 'Sin carrera'
+  if (profile?.careers && profile.careers.length > 0) {
+    careerName = profile.careers[0].name
+  } else if (profile?.career_id) {
+    const { data: careerData } = await supabase
+      .from('careers')
+      .select('name')
+      .eq('id', profile.career_id)
+      .single()
+    careerName = careerData?.name || 'Sin carrera'
+  }
+
   let courses: any[] = []
 
   if (profile?.role === 'admin' || profile?.role === 'profesor') {
@@ -66,7 +79,7 @@ export default async function CoursesPage() {
           <h1>{profile?.role === 'alumno' ? '📚 Mis Cursos' : '📚 Todos los Cursos'}</h1>
           <p>
             {profile?.role === 'alumno'
-              ? `${profile?.careers?.[0]?.name || 'Sin carrera'} · Ciclo ${profile?.cycle} · ${uniqueCourses.length} cursos`
+              ? `${careerName} · Ciclo ${profile?.cycle} · ${uniqueCourses.length} cursos`
               : 'Catálogo completo'}
           </p>
         </div>
