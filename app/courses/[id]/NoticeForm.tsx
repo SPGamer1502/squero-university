@@ -16,7 +16,7 @@ export default function NoticeForm({ courseId, notice }: { courseId: number; not
   const [content, setContent] = useState(notice?.content || '')
   const [isPermanent, setIsPermanent] = useState(notice?.is_permanent ?? false)
   const [expiresAt, setExpiresAt] = useState(notice?.expires_at ? new Date(notice.expires_at).toISOString().slice(0, 16) : '')
-  const [showForm, setShowForm] = useState(!notice)
+  const [showForm, setShowForm] = useState(false)   // controla si se muestra el formulario
   const supabase = createClient()
   const router = useRouter()
 
@@ -57,43 +57,102 @@ export default function NoticeForm({ courseId, notice }: { courseId: number; not
     if (error) alert('Error al eliminar')
     else {
       alert('Aviso eliminado')
+      setShowForm(false)
       router.refresh()
     }
   }
 
-  if (!showForm && notice?.id) {
+  // ========== SI HAY UN AVISO ACTIVO ==========
+  if (notice?.id) {
+    if (!showForm) {
+      // Vista del aviso + botón de gestionar
+      return (
+        <div style={{ marginTop: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button onClick={() => setShowForm(true)} className="btn btn-warning btn-sm">
+              ✏️ Gestionar aviso
+            </button>
+          </div>
+        </div>
+      )
+    }
+
+    // Vista del formulario de edición
     return (
-      <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-        <button onClick={() => setShowForm(true)} className="btn btn-warning btn-sm">✏️ Editar aviso</button>
-        <button onClick={handleDelete} className="btn btn-danger btn-sm">🗑️ Eliminar</button>
+      <div style={{ marginTop: '10px' }}>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Título del aviso</label>
+            <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="form-input" required />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Contenido</label>
+            <textarea value={content} onChange={e => setContent(e.target.value)} className="form-input" style={{ minHeight: '80px' }} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">
+              <input type="checkbox" checked={isPermanent} onChange={e => setIsPermanent(e.target.checked)} />
+              {' '}Permanente
+            </label>
+          </div>
+          {!isPermanent && (
+            <div className="form-group">
+              <label className="form-label">Fecha de expiración</label>
+              <input type="datetime-local" value={expiresAt} onChange={e => setExpiresAt(e.target.value)} className="form-input" />
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button type="submit" className="btn btn-success btn-sm">💾 Guardar cambios</button>
+            <button type="button" onClick={() => setShowForm(false)} className="btn btn-sm" style={{ background: '#e5e7eb' }}>Cancelar</button>
+          </div>
+        </form>
+        <div style={{ marginTop: '10px' }}>
+          <button onClick={handleDelete} className="btn btn-danger btn-sm">🗑️ Eliminar aviso</button>
+        </div>
       </div>
     )
   }
 
+  // ========== SIN AVISO ACTIVO (solo profesor/admin ve esto) ==========
+  if (!showForm) {
+    return (
+      <div style={{ marginTop: '10px' }}>
+        <button onClick={() => setShowForm(true)} className="btn btn-success btn-sm">
+          ➕ Crear aviso
+        </button>
+      </div>
+    )
+  }
+
+  // Formulario de creación
   return (
-    <form onSubmit={handleSubmit} style={{ marginTop: '10px' }}>
-      <div className="form-group">
-        <label className="form-label">Título del aviso</label>
-        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="form-input" required />
-      </div>
-      <div className="form-group">
-        <label className="form-label">Contenido</label>
-        <textarea value={content} onChange={e => setContent(e.target.value)} className="form-input" style={{ minHeight: '80px' }} />
-      </div>
-      <div className="form-group">
-        <label className="form-label">
-          <input type="checkbox" checked={isPermanent} onChange={e => setIsPermanent(e.target.checked)} />
-          {' '}Permanente
-        </label>
-      </div>
-      {!isPermanent && (
+    <div style={{ marginTop: '10px' }}>
+      <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label className="form-label">Fecha de expiración</label>
-          <input type="datetime-local" value={expiresAt} onChange={e => setExpiresAt(e.target.value)} className="form-input" />
+          <label className="form-label">Título del aviso</label>
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="form-input" required />
         </div>
-      )}
-      <button type="submit" className="btn btn-success btn-sm">💾 Guardar aviso</button>
-      {notice?.id && <button type="button" onClick={() => setShowForm(false)} className="btn btn-sm">Cancelar</button>}
-    </form>
+        <div className="form-group">
+          <label className="form-label">Contenido</label>
+          <textarea value={content} onChange={e => setContent(e.target.value)} className="form-input" style={{ minHeight: '80px' }} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">
+            <input type="checkbox" checked={isPermanent} onChange={e => setIsPermanent(e.target.checked)} />
+            {' '}Permanente
+          </label>
+        </div>
+        {!isPermanent && (
+          <div className="form-group">
+            <label className="form-label">Fecha de expiración</label>
+            <input type="datetime-local" value={expiresAt} onChange={e => setExpiresAt(e.target.value)} className="form-input" />
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button type="submit" className="btn btn-success btn-sm">💾 Guardar aviso</button>
+          <button type="button" onClick={() => setShowForm(false)} className="btn btn-sm" style={{ background: '#e5e7eb' }}>Cancelar</button>
+        </div>
+      </form>
+    </div>
   )
 }
