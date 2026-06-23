@@ -1,15 +1,16 @@
 'use client'
 import { createClient } from '@/utils/supabase/client'
-import { useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 
 export default function CreateAssignmentPage() {
   const router = useRouter()
-  const params = useParams()
+  const pathname = usePathname()
   const supabase = createClient()
 
-  // Forzar la obtención del ID como string y luego a número
-  const courseId = parseInt(params?.id as string)
+  // Extraer el ID del curso de la URL: /courses/[id]/assignments/create
+  const segments = pathname.split('/')
+  const courseId = parseInt(segments[2]) // segments[0]='', [1]='courses', [2]=id, ...
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -22,7 +23,7 @@ export default function CreateAssignmentPage() {
     setLoading(true)
 
     if (isNaN(courseId)) {
-      alert('Error: ID del curso no válido. Asegúrate de estar en la página correcta.')
+      alert('Error: No se pudo identificar el ID del curso.')
       setLoading(false)
       return
     }
@@ -62,6 +63,11 @@ export default function CreateAssignmentPage() {
       router.push(`/courses/${courseId}`)
     }
     setLoading(false)
+  }
+
+  // Mientras se carga el pathname (poco probable), muestra una carga simple
+  if (!pathname) {
+    return <div style={{ textAlign: 'center', padding: '3rem' }}>Cargando...</div>
   }
 
   return (
