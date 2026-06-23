@@ -11,14 +11,12 @@ export default function SubmissionForm({ assignmentId: initialAssignmentId }: { 
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Si initialAssignmentId no es un número válido, lo obtenemos de la URL
+  // Si el ID no es válido, lo obtenemos de la URL
   useEffect(() => {
     if (isNaN(parseInt(initialAssignmentId))) {
       const path = window.location.pathname
       const match = path.match(/\/courses\/\d+\/assignments\/(\d+)/)
-      if (match) {
-        setAssignmentId(parseInt(match[1]))
-      }
+      if (match) setAssignmentId(parseInt(match[1]))
     }
   }, [initialAssignmentId])
 
@@ -34,34 +32,72 @@ export default function SubmissionForm({ assignmentId: initialAssignmentId }: { 
     }
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      setLoading(false)
-      return
-    }
+    if (!user) return
 
-    const { data: uploadData, error } = await supabase.storage
+    // 1. Buscar entrega existente de este alumno en esta tarea
+    const { data: existing } = await supabase
+      .from('submissions')
+      .select('*')
+      .eq('assignment_id', assignmentId)
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    // 2. Subir el nuevo archivo
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from('submissions')
       .upload(`${assignmentId}/${user.id}/${Date.now()}-${file.name}`, file)
 
-    if (error) {
-      alert('Error al subir archivo: ' + error.message)
+    if (uploadError) {
+      alert('Error al subir archivo: ' + uploadError.message)
       setLoading(false)
       return
     }
 
-    const fileUrl = uploadData?.path || ''
-    const { error: insertError } = await supabase.from('submissions').insert({
-      assignment_id: assignmentId,
-      user_id: user.id,
-      file_url: fileUrl,
-    })
+    const newFileUrl = uploadData?.path || ''
 
-    if (insertError) {
-      alert('Error al guardar entrega: ' + insertError.message)
+    // 3. Si ya existía, eliminar el archivo antiguo y actualizar la fila
+    if (existing) {
+      // Eliminar archivo antiguo del storage
+      const oldPath = existing.file_url
+      if (oldPath) {
+        await supabase.storage.from('submissions').remove([oldPath])
+      }
+
+      // Actualizar la entrega existente
+      const { error: updateError } = await supabase
+        .from('submissions')
+        .update({
+          file_url: newFileUrl,
+          submitted_at: new Date().toISOString(),
+          grade: null,        // opcional: reiniciar nota al re-entregar
+          feedback: null
+        })
+        .eq('id', existing.id)
+
+      if (updateError) {
+        alert('Error al actualizar: ' + updateError.message)
+      } else {
+        alert('✅ Entrega actualizada')
+        router.refresh()
+      }
     } else {
-      alert('✅ Tarea entregada con éxito')
-      router.refresh()
+      // Insertar nueva entrega
+      const { error: insertError } = await supabase
+        .from('submissions')
+        .insert({
+          assignment_id: assignmentId,
+          user_id: user.id,
+          file_url: newFileUrl,
+        })
+
+      if (insertError) {
+        alert('Error al guardar: ' + insertError.message)
+      } else {
+        alert('✅ Tarea entregada con éxito')
+        router.refresh()
+      }
     }
+
     setLoading(false)
   }
 
