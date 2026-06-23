@@ -4,15 +4,24 @@ import Link from 'next/link'
 export default async function CoursesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user?.id).single()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*, career:careers(name)')
+    .eq('id', user?.id)
+    .single()
 
   let courses: any[] = []
 
   if (profile?.role === 'admin' || profile?.role === 'profesor') {
-    const { data } = await supabase.from('courses').select('*, careers(name)').order('career_id').order('cycle')
+    const { data } = await supabase
+      .from('courses')
+      .select('*, careers(name)')
+      .order('career_id')
+      .order('cycle')
     courses = data || []
   } else if (profile?.role === 'alumno' && profile?.career_id && profile?.cycle) {
-    const { data } = await supabase.from('courses')
+    const { data } = await supabase
+      .from('courses')
       .select('*, careers(name)')
       .eq('career_id', profile.career_id)
       .eq('cycle', profile.cycle)
@@ -20,12 +29,10 @@ export default async function CoursesPage() {
     courses = data || []
   }
 
-  // Eliminar duplicados por ID
   const uniqueCourses = Array.from(
     new Map(courses.map(course => [course.id, course])).values()
   )
 
-  // Obtener cursos con avisos activos
   const { data: coursesWithNotices } = await supabase
     .from('notices')
     .select('course_id')
@@ -57,7 +64,11 @@ export default async function CoursesPage() {
         
         <div className="page-header">
           <h1>{profile?.role === 'alumno' ? '📚 Mis Cursos' : '📚 Todos los Cursos'}</h1>
-          <p>{profile?.role === 'alumno' ? `${profile?.careers?.[0]?.name || 'Sin carrera'} · Ciclo ${profile?.cycle} · ${uniqueCourses.length} cursos` : 'Catálogo completo'}</p>
+          <p>
+            {profile?.role === 'alumno'
+              ? `${profile?.career?.[0]?.name || 'Sin carrera'} · Ciclo ${profile?.cycle} · ${uniqueCourses.length} cursos`
+              : 'Catálogo completo'}
+          </p>
         </div>
 
         <div className="grid" style={{ gap: '0.75rem' }}>

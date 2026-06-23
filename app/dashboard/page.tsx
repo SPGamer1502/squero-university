@@ -14,10 +14,15 @@ export default async function DashboardPage() {
     )
   }
 
-  const { data: profile } = await supabase.from('profiles').select('*, careers(name)').eq('id', user.id).single()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*, career:careers(name)')
+    .eq('id', user.id)
+    .single()
+
   const { data: faculties } = await supabase.from('faculties').select('*, careers(*)')
 
-  // ========== ADMIN DASHBOARD ==========
+  // ========== ADMIN ==========
   if (profile?.role === 'admin') {
     return (
       <div>
@@ -105,10 +110,11 @@ export default async function DashboardPage() {
 
   // ========== PROFESOR APROBADO ==========
   if (profile?.role === 'profesor') {
-    const { data: profCourses } = await supabase.from('professor_assignments')
-      .select('*, courses(*, careers(name))').eq('professor_id', user.id)
+    const { data: profCourses } = await supabase
+      .from('professor_assignments')
+      .select('*, courses(*, careers(name))')
+      .eq('professor_id', user.id)
 
-    // Obtener cursos con avisos activos
     const { data: coursesWithNotices } = await supabase
       .from('notices')
       .select('course_id')
@@ -161,7 +167,6 @@ export default async function DashboardPage() {
               <div className="empty-state">
                 <div className="empty-state-icon">📭</div>
                 <p>No tienes cursos asignados todavía.</p>
-                <p style={{ fontSize: '14px', color: '#9ca3af' }}>El administrador te asignará cursos pronto.</p>
               </div>
             )}
           </div>
@@ -189,9 +194,11 @@ export default async function DashboardPage() {
   }
 
   // ========== ALUMNO APROBADO ==========
-  const { data: enrollments } = await supabase.from('enrollments').select('*, courses(*)').eq('user_id', user.id)
+  const { data: enrollments } = await supabase
+    .from('enrollments')
+    .select('*, courses(*)')
+    .eq('user_id', user.id)
 
-  // Obtener cursos con avisos activos
   const { data: coursesWithNotices } = await supabase
     .from('notices')
     .select('course_id')
@@ -210,7 +217,9 @@ export default async function DashboardPage() {
         <div className="navbar-user">
           <div className="navbar-user-info">
             <div className="navbar-user-name">{profile?.full_name}</div>
-            <div className="navbar-user-role">{profile?.careers?.[0]?.name || 'Sin carrera'} · Ciclo {profile?.cycle}</div>
+            <div className="navbar-user-role">
+              {profile?.career?.[0]?.name || 'Sin carrera'} · Ciclo {profile?.cycle}
+            </div>
           </div>
           <form action="/auth/logout" method="post">
             <button type="submit" className="btn btn-sm" style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}>
@@ -223,7 +232,7 @@ export default async function DashboardPage() {
       <div className="container">
         <div className="page-header">
           <h1>👋 Bienvenido, {profile?.full_name}</h1>
-          <p>{profile?.careers?.[0]?.name || 'Sin carrera'} · Ciclo {profile?.cycle}</p>
+          <p>{profile?.career?.[0]?.name || 'Sin carrera'} · Ciclo {profile?.cycle}</p>
         </div>
 
         <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#1a365d', marginBottom: '1rem' }}>📚 Mis Cursos</h2>

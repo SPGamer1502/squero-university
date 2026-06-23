@@ -6,12 +6,25 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: course } = await supabase.from('courses').select('*, careers(name)').eq('id', id).single()
-  const { data: assignments } = await supabase.from('assignments').select('*').eq('course_id', id).order('due_date', { ascending: false })
-  const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id).single()
+  const { data: course } = await supabase
+    .from('courses')
+    .select('*, career:careers(name)')
+    .eq('id', id)
+    .single()
 
-  // Obtener aviso activo más reciente para este curso
+  const { data: assignments } = await supabase
+    .from('assignments')
+    .select('*')
+    .eq('course_id', id)
+    .order('due_date', { ascending: false })
+
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user?.id)
+    .single()
+
   const { data: activeNotice } = await supabase
     .from('notices')
     .select('*')
@@ -47,11 +60,10 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
         
         <div className="page-header">
           <h1>📖 {course?.name}</h1>
-          <p>{(course as any)?.careers?.name} · Ciclo {course?.cycle}</p>
+          <p>{course?.career?.[0]?.name || 'Sin carrera'} · Ciclo {course?.cycle}</p>
           <p style={{ fontSize: '14px', marginTop: '4px' }}>{course?.description}</p>
         </div>
 
-        {/* Bloque de aviso */}
         {activeNotice ? (
           <div className="card" style={{ backgroundColor: '#fff3cd', border: '2px solid #ffc107', marginBottom: '1.5rem' }}>
             <div className="card-header" style={{ background: '#ffc107', color: '#000' }}>
