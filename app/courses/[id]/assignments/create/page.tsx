@@ -1,16 +1,15 @@
 'use client'
 import { createClient } from '@/utils/supabase/client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 
 export default function CreateAssignmentPage() {
   const router = useRouter()
+  const params = useParams()
   const supabase = createClient()
 
-  // Obtener el ID del curso desde la URL manualmente
-  const pathname = window.location.pathname
-  const segments = pathname.split('/')
-  const courseIdFromUrl = parseInt(segments[2]) // /courses/[id]/assignments/create
+  // Forzar la obtención del ID como string y luego a número
+  const courseId = parseInt(params?.id as string)
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -22,8 +21,8 @@ export default function CreateAssignmentPage() {
     e.preventDefault()
     setLoading(true)
 
-    if (isNaN(courseIdFromUrl)) {
-      alert('Error: ID del curso no válido.')
+    if (isNaN(courseId)) {
+      alert('Error: ID del curso no válido. Asegúrate de estar en la página correcta.')
       setLoading(false)
       return
     }
@@ -32,16 +31,23 @@ export default function CreateAssignmentPage() {
     if (file) {
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('assignment-files')
-        .upload(`${courseIdFromUrl}/${Date.now()}-${file.name}`, file)
-      if (uploadError) { alert(uploadError.message); setLoading(false); return }
+        .upload(`${courseId}/${Date.now()}-${file.name}`, file)
+      if (uploadError) {
+        alert(uploadError.message)
+        setLoading(false)
+        return
+      }
       fileUrl = uploadData?.path || ''
     }
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setLoading(false); return }
+    if (!user) {
+      setLoading(false)
+      return
+    }
 
     const { error } = await supabase.from('assignments').insert({
-      course_id: courseIdFromUrl,
+      course_id: courseId,
       title,
       description,
       due_date: new Date(dueDate).toISOString(),
@@ -53,7 +59,7 @@ export default function CreateAssignmentPage() {
       alert('Error: ' + error.message)
     } else {
       alert('✅ Tarea creada con éxito')
-      router.push(`/courses/${courseIdFromUrl}`)
+      router.push(`/courses/${courseId}`)
     }
     setLoading(false)
   }
@@ -62,7 +68,7 @@ export default function CreateAssignmentPage() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
       <div style={{ width: '100%', maxWidth: '550px' }}>
         <div className="card">
-          <div className="card-header">📝 Nueva Tarea (Curso #{courseIdFromUrl})</div>
+          <div className="card-header">📝 Nueva Tarea (Curso #{courseId})</div>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">Título</label>
