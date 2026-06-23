@@ -28,8 +28,11 @@ export default function CreateAssignmentPage({ params }: { params: { id: string 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setLoading(false); return }
 
+    // Asegurar que course_id sea un número
+    const courseId = parseInt(params.id)
+    
     const { error } = await supabase.from('assignments').insert({
-      course_id: parseInt(params.id),
+      course_id: courseId,
       title,
       description,
       due_date: new Date(dueDate).toISOString(),
@@ -37,11 +40,11 @@ export default function CreateAssignmentPage({ params }: { params: { id: string 
       created_by: user.id
     })
 
-    if (!error) {
+    if (error) {
+      alert('Error: ' + error.message)
+    } else {
       alert('✅ Tarea creada con éxito')
       router.push(`/courses/${params.id}`)
-    } else {
-      alert('Error: ' + error.message)
     }
     setLoading(false)
   }
