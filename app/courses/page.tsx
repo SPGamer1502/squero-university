@@ -20,10 +20,16 @@ export default async function CoursesPage() {
     courses = data || []
   }
 
-  // ELIMINAR DUPLICADOS POR ID
+  // Eliminar duplicados por ID
   const uniqueCourses = Array.from(
     new Map(courses.map(course => [course.id, course])).values()
   )
+
+  // Obtener cursos con avisos activos
+  const { data: coursesWithNotices } = await supabase
+    .from('notices')
+    .select('course_id')
+    .or('is_permanent.eq.true,expires_at.gte.now()')
 
   return (
     <div>
@@ -33,7 +39,7 @@ export default async function CoursesPage() {
             <div className="navbar-brand-icon">🎓</div>
             <div>
               <div className="navbar-brand-text">SqueroUniversity</div>
-              <div className="navbar-brand-subtext">UNICA</div>
+              <div className="navbar-brand-subtext">SqueroU</div>
             </div>
           </a>
         </div>
@@ -56,7 +62,7 @@ export default async function CoursesPage() {
 
         <div className="grid" style={{ gap: '0.75rem' }}>
           {uniqueCourses.map((course: any) => (
-            <Link href={`/courses/${course.id}`} key={course.id} className="course-item" style={{ textDecoration: 'none' }}>
+            <Link href={`/courses/${course.id}`} key={course.id} className="course-item" style={{ textDecoration: 'none', position: 'relative' }}>
               <div>
                 <strong style={{ fontSize: '16px', color: '#1f2937' }}>{course.name}</strong>
                 <p style={{ color: '#9ca3af', fontSize: '13px', margin: '2px 0 0 0' }}>
@@ -65,6 +71,9 @@ export default async function CoursesPage() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span className="course-item-code">{course.code}</span>
+                {coursesWithNotices?.some(n => n.course_id === course.id) && (
+                  <span style={{ color: 'red', fontSize: '20px' }}>🔴</span>
+                )}
                 <span className="badge badge-primary">Ver curso</span>
               </div>
             </Link>

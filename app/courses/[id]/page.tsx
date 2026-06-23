@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
+import NoticeForm from './NoticeForm'
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -10,6 +11,16 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id).single()
 
+  // Obtener aviso activo más reciente para este curso
+  const { data: activeNotice } = await supabase
+    .from('notices')
+    .select('*')
+    .eq('course_id', id)
+    .or('is_permanent.eq.true,expires_at.gte.now()')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
   return (
     <div>
       <nav className="navbar">
@@ -18,7 +29,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
             <div className="navbar-brand-icon">🎓</div>
             <div>
               <div className="navbar-brand-text">SqueroUniversity</div>
-              <div className="navbar-brand-subtext">UNICA</div>
+              <div className="navbar-brand-subtext">SqueroU</div>
             </div>
           </a>
         </div>
@@ -39,6 +50,28 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
           <p>{(course as any)?.careers?.name} · Ciclo {course?.cycle}</p>
           <p style={{ fontSize: '14px', marginTop: '4px' }}>{course?.description}</p>
         </div>
+
+        {/* Bloque de aviso */}
+        {activeNotice ? (
+          <div className="card" style={{ backgroundColor: '#fff3cd', border: '2px solid #ffc107', marginBottom: '1.5rem' }}>
+            <div className="card-header" style={{ background: '#ffc107', color: '#000' }}>
+              📢 Aviso: {activeNotice.title}
+            </div>
+            <p style={{ whiteSpace: 'pre-wrap', padding: '1rem' }}>{activeNotice.content}</p>
+            {(profile?.role === 'admin' || profile?.role === 'profesor') && (
+              <NoticeForm courseId={parseInt(id)} notice={activeNotice} />
+            )}
+          </div>
+        ) : (
+          (profile?.role === 'admin' || profile?.role === 'profesor') && (
+            <div className="card" style={{ marginBottom: '1.5rem' }}>
+              <div className="card-header">📢 Crear un aviso</div>
+              <div style={{ padding: '1rem' }}>
+                <NoticeForm courseId={parseInt(id)} />
+              </div>
+            </div>
+          )
+        )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 className="card-header" style={{ margin: 0, border: 'none', padding: 0 }}>📝 Tareas del Curso</h2>

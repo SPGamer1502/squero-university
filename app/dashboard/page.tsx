@@ -26,7 +26,7 @@ export default async function DashboardPage() {
             <div className="navbar-brand-icon">🎓</div>
             <div>
               <div className="navbar-brand-text">SqueroUniversity</div>
-              <div className="navbar-brand-subtext">UNICA - Panel Admin</div>
+              <div className="navbar-brand-subtext">SqueroU</div>
             </div>
           </div>
           <div className="navbar-user">
@@ -108,6 +108,12 @@ export default async function DashboardPage() {
     const { data: profCourses } = await supabase.from('professor_assignments')
       .select('*, courses(*, careers(name))').eq('professor_id', user.id)
 
+    // Obtener cursos con avisos activos
+    const { data: coursesWithNotices } = await supabase
+      .from('notices')
+      .select('course_id')
+      .or('is_permanent.eq.true,expires_at.gte.now()')
+
     return (
       <div>
         <nav className="navbar">
@@ -115,7 +121,7 @@ export default async function DashboardPage() {
             <div className="navbar-brand-icon">🎓</div>
             <div>
               <div className="navbar-brand-text">SqueroUniversity</div>
-              <div className="navbar-brand-subtext">UNICA - Profesor</div>
+              <div className="navbar-brand-subtext">SqueroU</div>
             </div>
           </div>
           <div className="navbar-user">
@@ -139,12 +145,15 @@ export default async function DashboardPage() {
 
           <div className="grid grid-2">
             {profCourses?.map((pc: any) => (
-              <Link href={`/courses/${pc.courses.id}`} key={pc.id} className="card" style={{ textDecoration: 'none' }}>
+              <Link href={`/courses/${pc.courses.id}`} key={pc.id} className="card" style={{ textDecoration: 'none', position: 'relative' }}>
                 <div style={{ fontSize: '28px', marginBottom: '0.5rem' }}>📖</div>
                 <strong style={{ fontSize: '18px', color: '#1f2937' }}>{pc.courses.name}</strong>
                 <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '4px' }}>
                   {pc.courses.code} · {pc.courses.careers?.name} · Ciclo {pc.courses.cycle}
                 </p>
+                {coursesWithNotices?.some(n => n.course_id === pc.courses.id) && (
+                  <span style={{ position: 'absolute', top: '10px', right: '10px', color: 'red', fontSize: '20px' }}>🔴</span>
+                )}
                 <span className="badge badge-primary" style={{ marginTop: '8px', display: 'inline-block' }}>Ver curso →</span>
               </Link>
             ))}
@@ -182,6 +191,12 @@ export default async function DashboardPage() {
   // ========== ALUMNO APROBADO ==========
   const { data: enrollments } = await supabase.from('enrollments').select('*, courses(*)').eq('user_id', user.id)
 
+  // Obtener cursos con avisos activos
+  const { data: coursesWithNotices } = await supabase
+    .from('notices')
+    .select('course_id')
+    .or('is_permanent.eq.true,expires_at.gte.now()')
+
   return (
     <div>
       <nav className="navbar">
@@ -189,7 +204,7 @@ export default async function DashboardPage() {
           <div className="navbar-brand-icon">🎓</div>
           <div>
             <div className="navbar-brand-text">SqueroUniversity</div>
-            <div className="navbar-brand-subtext">UNICA</div>
+            <div className="navbar-brand-subtext">SqueroU</div>
           </div>
         </div>
         <div className="navbar-user">
@@ -214,12 +229,15 @@ export default async function DashboardPage() {
         <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#1a365d', marginBottom: '1rem' }}>📚 Mis Cursos</h2>
         <div className="grid" style={{ gap: '0.75rem' }}>
           {enrollments?.map((e: any) => (
-            <Link href={`/courses/${e.courses.id}`} key={e.courses.id} className="course-item" style={{ textDecoration: 'none' }}>
+            <Link href={`/courses/${e.courses.id}`} key={e.courses.id} className="course-item" style={{ textDecoration: 'none', position: 'relative' }}>
               <div>
                 <strong style={{ fontSize: '16px', color: '#1f2937' }}>{e.courses.name}</strong>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span className="course-item-code">{e.courses.code}</span>
+                {coursesWithNotices?.some(n => n.course_id === e.courses.id) && (
+                  <span style={{ color: 'red', fontSize: '20px' }}>🔴</span>
+                )}
                 <span style={{ color: '#2563eb', fontWeight: 600 }}>→</span>
               </div>
             </Link>
