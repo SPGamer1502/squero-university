@@ -1,8 +1,13 @@
-// Server Component - obtiene params y pasa el courseId al cliente
+// Server Component asíncrono
 import CreateAssignmentClient from './CreateAssignmentClient'
 
-export default function CreateAssignmentPage({ params }: { params: { id: string } }) {
-  const courseId = parseInt(params.id)
+export default async function CreateAssignmentPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  const { id } = await params
+  const courseId = parseInt(id)
 
   return <CreateAssignmentClient courseId={courseId} />
 }

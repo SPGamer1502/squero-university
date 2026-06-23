@@ -1,10 +1,12 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 
-export default async function CourseDetailPage({ params }: { params: { id: string } }) {
+export default async function CourseDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
-  const { data: course } = await supabase.from('courses').select('*, careers(name)').eq('id', params.id).single()
-  const { data: assignments } = await supabase.from('assignments').select('*').eq('course_id', params.id).order('due_date', { ascending: false })
+
+  const { data: course } = await supabase.from('courses').select('*, careers(name)').eq('id', id).single()
+  const { data: assignments } = await supabase.from('assignments').select('*').eq('course_id', id).order('due_date', { ascending: false })
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id).single()
 
@@ -41,7 +43,7 @@ export default async function CourseDetailPage({ params }: { params: { id: strin
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 className="card-header" style={{ margin: 0, border: 'none', padding: 0 }}>📝 Tareas del Curso</h2>
           {(profile?.role === 'admin' || profile?.role === 'profesor') && (
-            <Link href={`/courses/${params.id}/assignments/create`} className="btn btn-success">
+            <Link href={`/courses/${id}/assignments/create`} className="btn btn-success">
               ➕ Nueva Tarea
             </Link>
           )}
@@ -51,7 +53,7 @@ export default async function CourseDetailPage({ params }: { params: { id: strin
           {assignments?.map((a: any) => {
             const isExpired = new Date(a.due_date) < new Date()
             return (
-              <Link href={`/courses/${params.id}/assignments/${a.id}`} key={a.id} className="card" style={{ textDecoration: 'none' }}>
+              <Link href={`/courses/${id}/assignments/${a.id}`} key={a.id} className="card" style={{ textDecoration: 'none' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <strong style={{ fontSize: '16px', color: '#1f2937' }}>{a.title}</strong>

@@ -1,24 +1,36 @@
 'use client'
 import { createClient } from '@/utils/supabase/client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function CreateAssignmentClient({ courseId }: { courseId: number }) {
+export default function CreateAssignmentClient({ courseId: initialCourseId }: { courseId: number }) {
   const router = useRouter()
   const supabase = createClient()
-
+  
+  const [courseId, setCourseId] = useState<number>(initialCourseId)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
 
+  // Si por algún motivo initialCourseId es NaN, tomamos el ID de la URL
+  useEffect(() => {
+    if (isNaN(initialCourseId)) {
+      const path = window.location.pathname
+      const match = path.match(/\/courses\/(\d+)\/assignments\/create/)
+      if (match) {
+        setCourseId(parseInt(match[1]))
+      }
+    }
+  }, [initialCourseId])
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
 
     if (isNaN(courseId)) {
-      alert('Error: ID del curso no válido.')
+      alert('Error: No se pudo identificar el curso.')
       setLoading(false)
       return
     }
@@ -64,7 +76,9 @@ export default function CreateAssignmentClient({ courseId }: { courseId: number 
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
       <div style={{ width: '100%', maxWidth: '550px' }}>
         <div className="card">
-          <div className="card-header">📝 Nueva Tarea (Curso #{courseId})</div>
+          <div className="card-header">
+            📝 Nueva Tarea (Curso #{courseId})
+          </div>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">Título</label>
