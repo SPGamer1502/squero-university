@@ -19,27 +19,31 @@ export default function RegisterPage() {
     setLoading(true)
     setError('')
     setSuccess('')
-    
+
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } }
+      email: email.trim(),
+      password: password,
+      options: {
+        data: { 
+          full_name: fullName,
+          role: role 
+        }
+      }
     })
-    
+
     if (error) {
       setError(error.message)
       setLoading(false)
       return
     }
-    
+
     if (data.user) {
-      await supabase.from('profiles').update({ role, full_name: fullName }).eq('id', data.user.id)
-      if (role === 'alumno') {
-        setSuccess('¡Cuenta creada! El administrador te asignará una carrera y ciclo.')
+      if (role === 'alumno' || role === 'profesor') {
+        setSuccess('¡Cuenta creada! El administrador te asignará pronto. Redirigiendo al login...')
       } else {
-        setSuccess('¡Cuenta creada! Redirigiendo al inicio de sesión...')
-        setTimeout(() => router.push('/login'), 2000)
+        setSuccess('¡Cuenta de admin creada! Redirigiendo...')
       }
+      setTimeout(() => router.push('/login'), 3000)
     }
     setLoading(false)
   }
@@ -71,14 +75,14 @@ export default function RegisterPage() {
                 className="form-input" required />
             </div>
             <div className="form-group">
-              <label className="form-label">Contraseña</label>
-              <input type="password" placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)}
-                className="form-input" required />
+              <label className="form-label">Contraseña (mínimo 6 caracteres)</label>
+              <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)}
+                className="form-input" required minLength={6} />
             </div>
             <div className="form-group">
               <label className="form-label">Rol</label>
               <select value={role} onChange={e => setRole(e.target.value)} className="form-select">
-                <option value="alumno">🎓 Alumno (requiere asignación)</option>
+                <option value="alumno">🎓 Alumno</option>
                 <option value="profesor">👨‍🏫 Profesor</option>
                 <option value="admin">🔧 Administrador</option>
               </select>
