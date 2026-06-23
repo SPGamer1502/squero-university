@@ -30,7 +30,7 @@ export default async function AssignmentPage({
     .eq('user_id', user?.id)
     .maybeSingle()
 
-  // Generar enlaces firmados para buckets privados
+  // Enlaces firmados para archivos
   const fileUrl = assignment?.file_url
     ? (await supabase.storage.from('assignment-files').createSignedUrl(assignment.file_url, 3600)).data?.signedUrl
     : null
@@ -163,7 +163,7 @@ export default async function AssignmentPage({
                 <p>
                   <strong>🎯 Nota:</strong>{' '}
                   <span style={{ fontSize: '24px', fontWeight: 800, color: '#059669' }}>
-                    {submission.grade}/10
+                    {submission.grade}/20
                   </span>
                 </p>
                 {submission.feedback && (
