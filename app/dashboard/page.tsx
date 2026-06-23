@@ -16,7 +16,7 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('*, career:careers(name)')
+    .select('*, careers(name)')
     .eq('id', user.id)
     .single()
 
@@ -218,7 +218,7 @@ export default async function DashboardPage() {
           <div className="navbar-user-info">
             <div className="navbar-user-name">{profile?.full_name}</div>
             <div className="navbar-user-role">
-              {profile?.career?.[0]?.name || 'Sin carrera'} · Ciclo {profile?.cycle}
+              {profile?.careers?.[0]?.name || 'Sin carrera'} · Ciclo {profile?.cycle}
             </div>
           </div>
           <form action="/auth/logout" method="post">
@@ -232,7 +232,7 @@ export default async function DashboardPage() {
       <div className="container">
         <div className="page-header">
           <h1>👋 Bienvenido, {profile?.full_name}</h1>
-          <p>{profile?.career?.[0]?.name || 'Sin carrera'} · Ciclo {profile?.cycle}</p>
+          <p>{profile?.careers?.[0]?.name || 'Sin carrera'} · Ciclo {profile?.cycle}</p>
         </div>
 
         <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#1a365d', marginBottom: '1rem' }}>📚 Mis Cursos</h2>

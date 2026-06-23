@@ -8,7 +8,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
 
   const { data: course } = await supabase
     .from('courses')
-    .select('*, career:careers(name)')
+    .select('*, careers(name)')
     .eq('id', id)
     .single()
 
@@ -60,7 +60,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
         
         <div className="page-header">
           <h1>📖 {course?.name}</h1>
-          <p>{course?.career?.[0]?.name || 'Sin carrera'} · Ciclo {course?.cycle}</p>
+          <p>{course?.careers?.[0]?.name || 'Sin carrera'} · Ciclo {course?.cycle}</p>
           <p style={{ fontSize: '14px', marginTop: '4px' }}>{course?.description}</p>
         </div>
 

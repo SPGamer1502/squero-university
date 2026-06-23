@@ -6,7 +6,7 @@ export default async function CoursesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase
     .from('profiles')
-    .select('*, career:careers(name)')
+    .select('*, careers(name)')
     .eq('id', user?.id)
     .single()
 
@@ -66,7 +66,7 @@ export default async function CoursesPage() {
           <h1>{profile?.role === 'alumno' ? '📚 Mis Cursos' : '📚 Todos los Cursos'}</h1>
           <p>
             {profile?.role === 'alumno'
-              ? `${profile?.career?.[0]?.name || 'Sin carrera'} · Ciclo ${profile?.cycle} · ${uniqueCourses.length} cursos`
+              ? `${profile?.careers?.[0]?.name || 'Sin carrera'} · Ciclo ${profile?.cycle} · ${uniqueCourses.length} cursos`
               : 'Catálogo completo'}
           </p>
         </div>
