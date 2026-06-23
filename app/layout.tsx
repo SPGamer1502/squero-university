@@ -2,8 +2,11 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'SqueroUniversity - UNICA',
-  description: 'Aula virtual de la Universidad Nacional San Luis Gonzaga',
+  title: 'SqueroUniversity - SQueroU',
+  description: 'Aula virtual de la Universidad Nacional SqueroUniversity',
+  icons: {
+    icon: '/Favicon.png',  // Asegúrate de que coincida exactamente con el nombre en 'public'
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
