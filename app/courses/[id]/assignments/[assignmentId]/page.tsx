@@ -30,12 +30,13 @@ export default async function AssignmentPage({
     .eq('user_id', user?.id)
     .maybeSingle()
 
+  // Generar enlaces firmados para buckets privados
   const fileUrl = assignment?.file_url
-    ? supabase.storage.from('assignment-files').getPublicUrl(assignment.file_url).data.publicUrl
+    ? (await supabase.storage.from('assignment-files').createSignedUrl(assignment.file_url, 3600)).data?.signedUrl
     : null
 
   const submissionUrl = submission?.file_url
-    ? supabase.storage.from('submissions').getPublicUrl(submission.file_url).data.publicUrl
+    ? (await supabase.storage.from('submissions').createSignedUrl(submission.file_url, 3600)).data?.signedUrl
     : null
 
   const isLate = assignment ? new Date() > new Date(assignment.due_date) : false
