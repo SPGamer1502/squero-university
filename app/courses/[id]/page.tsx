@@ -110,7 +110,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
 
         {/* Foro (visible si está habilitado o para admin/profesor) */}
         {(forumEnabled || profile?.role === 'admin' || profile?.role === 'profesor') && (
-          <ForumSection courseId={parseInt(id)} role={profile?.role || 'alumno'} />
+          <ForumSection courseId={parseInt(id)} role={profile?.role || 'alumno'} userId={user?.id || ''} />
         )}
 
         {/* Botones de tareas y exámenes */}
