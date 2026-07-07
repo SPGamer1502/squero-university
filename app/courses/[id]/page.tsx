@@ -113,13 +113,19 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
           <ForumSection courseId={parseInt(id)} role={profile?.role || 'alumno'} />
         )}
 
+        {/* Botones de tareas y exámenes */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 className="card-header" style={{ margin: 0, border: 'none', padding: 0 }}>📝 Tareas del Curso</h2>
-          {(profile?.role === 'admin' || profile?.role === 'profesor') && (
-            <Link href={`/courses/${id}/assignments/create`} className="btn btn-success">
-              ➕ Nueva Tarea
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            {(profile?.role === 'admin' || profile?.role === 'profesor') && (
+              <Link href={`/courses/${id}/assignments/create`} className="btn btn-success">
+                ➕ Nueva Tarea
+              </Link>
+            )}
+            <Link href={`/courses/${id}/exams`} className="btn btn-primary">
+              📝 Exámenes
             </Link>
-          )}
+          </div>
         </div>
 
         <div className="grid" style={{ gap: '0.75rem' }}>
