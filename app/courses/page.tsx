@@ -10,7 +10,7 @@ export default async function CoursesPage() {
     .eq('id', user?.id)
     .single()
 
-  // Obtener nombre de carrera seguro
+  // Obtener nombre de carrera seguro para alumnos
   let careerName = 'Sin carrera'
   if (profile?.careers && profile.careers.length > 0) {
     careerName = profile.careers[0].name
@@ -25,14 +25,30 @@ export default async function CoursesPage() {
 
   let courses: any[] = []
 
-  if (profile?.role === 'admin' || profile?.role === 'profesor') {
-    const { data } = await supabase
-      .from('courses')
-      .select('*, careers(name)')
-      .order('career_id')
-      .order('cycle')
+  if (profile?.role === 'admin') {
+    // Admin ve todos los cursos
+    const { data } = await supabase.from('courses').select('*, careers(name)').order('career_id').order('cycle')
     courses = data || []
+  } else if (profile?.role === 'profesor') {
+    // Profesor solo ve los cursos que tiene asignados
+    const { data: profAssignments } = await supabase
+      .from('professor_assignments')
+      .select('course_id')
+      .eq('professor_id', user?.id)
+
+    if (profAssignments && profAssignments.length > 0) {
+      const courseIds = profAssignments.map(a => a.course_id)
+      const { data } = await supabase
+        .from('courses')
+        .select('*, careers(name)')
+        .in('id', courseIds)
+        .order('name')
+      courses = data || []
+    } else {
+      courses = []
+    }
   } else if (profile?.role === 'alumno' && profile?.career_id && profile?.cycle) {
+    // Alumno solo ve los cursos de su ciclo y carrera
     const { data } = await supabase
       .from('courses')
       .select('*, careers(name)')
@@ -42,10 +58,12 @@ export default async function CoursesPage() {
     courses = data || []
   }
 
+  // Eliminar duplicados por ID (por si acaso)
   const uniqueCourses = Array.from(
     new Map(courses.map(course => [course.id, course])).values()
   )
 
+  // Obtener cursos con avisos activos
   const { data: coursesWithNotices } = await supabase
     .from('notices')
     .select('course_id')
@@ -76,11 +94,13 @@ export default async function CoursesPage() {
         <Link href="/dashboard" className="link" style={{ display: 'inline-block', marginBottom: '1rem' }}>← Volver al inicio</Link>
         
         <div className="page-header">
-          <h1>{profile?.role === 'alumno' ? '📚 Mis Cursos' : '📚 Todos los Cursos'}</h1>
+          <h1>{profile?.role === 'alumno' ? '📚 Mis Cursos' : profile?.role === 'profesor' ? '📚 Mis Cursos Asignados' : '📚 Todos los Cursos'}</h1>
           <p>
             {profile?.role === 'alumno'
               ? `${careerName} · Ciclo ${profile?.cycle} · ${uniqueCourses.length} cursos`
-              : 'Catálogo completo'}
+              : profile?.role === 'profesor'
+                ? `${uniqueCourses.length} cursos asignados`
+                : 'Catálogo completo'}
           </p>
         </div>
 
@@ -105,7 +125,7 @@ export default async function CoursesPage() {
           {uniqueCourses.length === 0 && (
             <div className="empty-state">
               <div className="empty-state-icon">📭</div>
-              <p>No tienes cursos asignados.</p>
+              <p>{profile?.role === 'profesor' ? 'No tienes cursos asignados.' : 'No tienes cursos disponibles.'}</p>
             </div>
           )}
         </div>
