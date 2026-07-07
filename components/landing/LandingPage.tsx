@@ -1,3 +1,4 @@
+'use client'
 import Link from 'next/link'
 
 // Datos completos de las 23 carreras (se pueden reemplazar por los de Supabase cuando funcione)
@@ -28,7 +29,6 @@ const ALL_CAREERS = [
 ];
 
 export default function LandingPage({ careers }: { careers?: any[] }) {
-  // Si no llegan carreras desde Supabase, usamos las predefinidas
   const displayCareers = careers && careers.length > 0 ? careers : ALL_CAREERS;
 
   return (
@@ -156,7 +156,6 @@ export default function LandingPage({ careers }: { careers?: any[] }) {
             gap: '1.5rem',
           }}>
             {displayCareers.map((career: any) => {
-              // Obtener el nombre de la facultad (puede venir en diferentes formatos)
               const facultyName = career.faculty || career.faculties?.name || career.faculties?.[0]?.name || '';
               return (
                 <div key={career.id} style={{
