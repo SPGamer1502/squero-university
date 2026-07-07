@@ -6,7 +6,7 @@ export default function ForumSection({ courseId, role, userId }: { courseId: num
   const [posts, setPosts] = useState<any[]>([])
   const [newPost, setNewPost] = useState('')
   const [loading, setLoading] = useState(false)
-  const [menuOpen, setMenuOpen] = useState<number | null>(null) // ID del post cuyo menú está abierto
+  const [menuOpen, setMenuOpen] = useState<number | null>(null)
   const supabase = createClient()
 
   const fetchPosts = useCallback(async () => {
@@ -23,7 +23,7 @@ export default function ForumSection({ courseId, role, userId }: { courseId: num
     fetchPosts()
   }, [fetchPosts])
 
-  // Suscripción en tiempo real para nuevos mensajes
+  // Suscripción en tiempo real
   useEffect(() => {
     const channel = supabase
       .channel(`forum-${courseId}`)
@@ -71,7 +71,6 @@ export default function ForumSection({ courseId, role, userId }: { courseId: num
     })
     if (!error) {
       setNewPost('')
-      // No necesitamos fetch manual, Realtime lo agrega
     } else {
       alert('Error al publicar')
     }
@@ -87,7 +86,6 @@ export default function ForumSection({ courseId, role, userId }: { courseId: num
     setMenuOpen(null)
   }
 
-  // Vaciar todo el foro (solo admin/profesor)
   const handleClearAll = async () => {
     if (!confirm('¿Eliminar TODOS los mensajes del foro? Esta acción no se puede deshacer.')) return
     const { error } = await supabase.from('forum_posts').delete().eq('course_id', courseId)
@@ -119,8 +117,7 @@ export default function ForumSection({ courseId, role, userId }: { courseId: num
                 <span style={{ fontSize: '12px', color: '#9ca3af' }}>
                   {new Date(post.created_at).toLocaleString('es-PE')}
                 </span>
-                {/* Menú de tres puntos */}
-                {(post.user_id === (supabase.auth.getUser() as any)?.id || role === 'admin' || role === 'profesor') && (
+                {(post.user_id === userId || role === 'admin' || role === 'profesor') && (
                   <div style={{ position: 'relative' }}>
                     <button
                       onClick={() => setMenuOpen(menuOpen === post.id ? null : post.id)}
