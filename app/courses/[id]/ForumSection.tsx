@@ -9,6 +9,7 @@ export default function ForumSection({ courseId, role, userId }: { courseId: num
   const [menuOpen, setMenuOpen] = useState<number | null>(null)
   const supabase = createClient()
 
+  // Cargar todos los mensajes del curso con el nombre del usuario
   const fetchPosts = useCallback(async () => {
     const { data } = await supabase
       .from('forum_posts')
@@ -18,37 +19,48 @@ export default function ForumSection({ courseId, role, userId }: { courseId: num
     setPosts(data || [])
   }, [courseId])
 
-  // Cargar posts iniciales
+  // Carga inicial
   useEffect(() => {
     fetchPosts()
   }, [fetchPosts])
 
-  // Suscripción en tiempo real
+  // Suscripción en tiempo real mejorada
   useEffect(() => {
     const channel = supabase
-      .channel(`forum-${courseId}`)
+      .channel(`forum-realtime-${courseId}`)
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'forum_posts',
           filter: `course_id=eq.${courseId}`,
         },
-        (payload) => {
-          setPosts((prev) => [...prev, payload.new])
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'forum_posts',
-          filter: `course_id=eq.${courseId}`,
-        },
-        (payload) => {
-          setPosts((prev) => prev.filter((p) => p.id !== payload.old.id))
+        async (payload) => {
+          if (payload.eventType === 'INSERT') {
+            // Obtener el nuevo mensaje con el nombre del usuario
+            const { data: newPost } = await supabase
+              .from('forum_posts')
+              .select('*, profiles(full_name)')
+              .eq('id', payload.new.id)
+              .single()
+
+            if (newPost) {
+              setPosts((prev) => [...prev, newPost])
+            }
+          } else if (payload.eventType === 'DELETE') {
+            setPosts((prev) => prev.filter((p) => p.id !== payload.old.id))
+          } else if (payload.eventType === 'UPDATE') {
+            // Si se edita (aunque no tenemos edición, por si acaso)
+            const { data: updatedPost } = await supabase
+              .from('forum_posts')
+              .select('*, profiles(full_name)')
+              .eq('id', payload.new.id)
+              .single()
+            if (updatedPost) {
+              setPosts((prev) => prev.map((p) => (p.id === updatedPost.id ? updatedPost : p)))
+            }
+          }
         }
       )
       .subscribe()
@@ -112,11 +124,12 @@ export default function ForumSection({ courseId, role, userId }: { courseId: num
         {posts.map(post => (
           <div key={post.id} style={{ borderBottom: '1px solid #e5e7eb', padding: '0.75rem 0', position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <strong style={{ fontSize: '14px' }}>{post.profiles?.full_name}</strong>
+              <strong style={{ fontSize: '14px' }}>{post.profiles?.full_name || 'Usuario'}</strong>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '12px', color: '#9ca3af' }}>
                   {new Date(post.created_at).toLocaleString('es-PE')}
                 </span>
+                {/* Menú de tres puntos solo si es dueño, admin o profesor */}
                 {(post.user_id === userId || role === 'admin' || role === 'profesor') && (
                   <div style={{ position: 'relative' }}>
                     <button
