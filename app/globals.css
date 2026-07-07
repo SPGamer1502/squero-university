@@ -1,24 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
-  --primary: #1e293b;          /* slate-800 */
-  --primary-light: #334155;    /* slate-700 */
-  --primary-dark: #0f172a;     /* slate-900 */
+  --primary: #4a3b32;          /* marrón oscuro */
+  --primary-light: #6b5b4f;
+  --primary-dark: #2e241c;
   --accent: #c5a572;           /* dorado suave */
   --accent-hover: #b8935a;
-  --success: #16a34a;
-  --danger: #dc2626;
+  --success: #4a7c59;          /* verde oliva */
+  --danger: #b23b2c;
   --warning: #d97706;
-  --gray-50: #f8fafc;
-  --gray-100: #f1f5f9;
-  --gray-200: #e2e8f0;
-  --gray-300: #cbd5e1;
-  --gray-400: #94a3b8;
-  --gray-500: #64748b;
-  --gray-600: #475569;
-  --gray-700: #334155;
-  --gray-800: #1e293b;
-  --gray-900: #0f172a;
+  --gray-50: #faf8f5;
+  --gray-100: #f5f0eb;
+  --gray-200: #e8e0d5;
+  --gray-300: #d4c9b8;
+  --gray-400: #b8a99a;
+  --gray-500: #8c7b6b;
+  --gray-600: #6b5b4f;
+  --gray-700: #4a3b32;
+  --gray-800: #2e241c;
+  --gray-900: #1a1512;
   --white: #ffffff;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -39,7 +39,7 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #f8fafc;
+  background: #faf8f5;
   color: var(--gray-800);
   line-height: 1.6;
   min-height: 100vh;
@@ -168,7 +168,7 @@ body {
   color: var(--white);
 }
 .btn-success:hover {
-  background: #15803d;
+  background: #3d6b4a;
 }
 
 .btn-danger {
@@ -176,7 +176,7 @@ body {
   color: var(--white);
 }
 .btn-danger:hover {
-  background: #b91c1c;
+  background: #9a2c1f;
 }
 
 .btn-warning {
@@ -234,7 +234,7 @@ body {
 .form-select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+  box-shadow: 0 0 0 3px rgba(74, 59, 50, 0.1);
 }
 
 /* ============ ALERTS ============ */
@@ -261,7 +261,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
-.badge-primary { background: #e2e8f0; color: #1e293b; }
+.badge-primary { background: #e8e0d5; color: #4a3b32; }
 .badge-success { background: #dcfce7; color: #166534; }
 .badge-warning { background: #fef3c7; color: #92400e; }
 .badge-danger { background: #fee2e2; color: #991b1b; }
