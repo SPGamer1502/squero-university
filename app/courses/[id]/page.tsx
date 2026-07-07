@@ -3,6 +3,7 @@ import Link from 'next/link'
 import NoticeForm from './NoticeForm'
 import ForumSection from './ForumSection'
 import ForumToggle from './ForumToggle'
+import DeleteAssignmentButton from './DeleteAssignmentButton'
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -132,19 +133,26 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
           {assignments?.map((a: any) => {
             const isExpired = new Date(a.due_date) < new Date()
             return (
-              <Link href={`/courses/${id}/assignments/${a.id}`} key={a.id} className="card" style={{ textDecoration: 'none' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <strong style={{ fontSize: '16px', color: '#1f2937' }}>{a.title}</strong>
-                    <p style={{ color: '#6b7280', fontSize: '13px', marginTop: '4px' }}>
-                      📅 {new Date(a.due_date).toLocaleDateString('es-PE', {
-                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                      })}
-                    </p>
+              <div key={a.id} style={{ position: 'relative' }}>
+                <Link href={`/courses/${id}/assignments/${a.id}`} className="card" style={{ textDecoration: 'none', display: 'block' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ flex: 1 }}>
+                      <strong style={{ fontSize: '16px', color: '#1f2937' }}>{a.title}</strong>
+                      <p style={{ color: '#6b7280', fontSize: '13px', marginTop: '4px' }}>
+                        📅 {new Date(a.due_date).toLocaleDateString('es-PE', {
+                          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: '10px' }}>
+                      {isExpired ? <span className="badge badge-danger">Vencida</span> : <span className="badge badge-success">Activa</span>}
+                      {(profile?.role === 'admin' || profile?.role === 'profesor') && (
+                        <DeleteAssignmentButton assignmentId={a.id} courseId={parseInt(id)} />
+                      )}
+                    </div>
                   </div>
-                  {isExpired ? <span className="badge badge-danger">Vencida</span> : <span className="badge badge-success">Activa</span>}
-                </div>
-              </Link>
+                </Link>
+              </div>
             )
           })}
           {(!assignments || assignments.length === 0) && (
