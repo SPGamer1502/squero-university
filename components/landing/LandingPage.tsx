@@ -1,36 +1,6 @@
 import Link from 'next/link'
 
-// Datos completos de las 23 carreras (se pueden reemplazar por los de Supabase cuando funcione)
-const ALL_CAREERS = [
-  { id: 1, name: 'Ingeniería de Sistemas', faculty: 'Facultad de Ingeniería' },
-  { id: 2, name: 'Ingeniería Civil', faculty: 'Facultad de Ingeniería' },
-  { id: 3, name: 'Ingeniería Mecánica', faculty: 'Facultad de Ingeniería' },
-  { id: 4, name: 'Ingeniería Electrónica', faculty: 'Facultad de Ingeniería' },
-  { id: 5, name: 'Ingeniería de Minas', faculty: 'Facultad de Ingeniería' },
-  { id: 6, name: 'Ingeniería Química', faculty: 'Facultad de Ingeniería' },
-  { id: 7, name: 'Ingeniería Agronómica', faculty: 'Facultad de Ingeniería' },
-  { id: 8, name: 'Medicina Humana', faculty: 'Facultad de Ciencias de la Salud' },
-  { id: 9, name: 'Odontología', faculty: 'Facultad de Ciencias de la Salud' },
-  { id: 10, name: 'Farmacia y Bioquímica', faculty: 'Facultad de Ciencias de la Salud' },
-  { id: 11, name: 'Enfermería', faculty: 'Facultad de Ciencias de la Salud' },
-  { id: 12, name: 'Obstetricia', faculty: 'Facultad de Ciencias de la Salud' },
-  { id: 13, name: 'Psicología', faculty: 'Facultad de Ciencias de la Salud' },
-  { id: 14, name: 'Contabilidad', faculty: 'Facultad de Ciencias Económicas' },
-  { id: 15, name: 'Administración', faculty: 'Facultad de Ciencias Económicas' },
-  { id: 16, name: 'Economía', faculty: 'Facultad de Ciencias Económicas' },
-  { id: 17, name: 'Derecho', faculty: 'Facultad de Derecho' },
-  { id: 18, name: 'Educación Primaria', faculty: 'Facultad de Educación' },
-  { id: 19, name: 'Educación Secundaria', faculty: 'Facultad de Educación' },
-  { id: 20, name: 'Biología', faculty: 'Facultad de Ciencias Biológicas' },
-  { id: 21, name: 'Trabajo Social', faculty: 'Facultad de Ciencias Sociales' },
-  { id: 22, name: 'Sociología', faculty: 'Facultad de Ciencias Sociales' },
-  { id: 23, name: 'Comunicación Social', faculty: 'Facultad de Ciencias Sociales' },
-];
-
-export default function LandingPage({ careers }: { careers?: any[] }) {
-  // Si no llegan carreras desde Supabase, usamos las predefinidas
-  const displayCareers = careers && careers.length > 0 ? careers : ALL_CAREERS;
-
+export default function LandingPage({ careers }: { careers: any[] }) {
   return (
     <div style={{ fontFamily: 'Inter, sans-serif', color: '#2d3748' }}>
       {/* ========== NAVBAR ========== */}
@@ -150,64 +120,70 @@ export default function LandingPage({ careers }: { careers?: any[] }) {
             </p>
           </div>
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '1.5rem',
-          }}>
-            {displayCareers.map((career: any) => {
-              // Obtener el nombre de la facultad (puede venir en diferentes formatos)
-              const facultyName = career.faculty || career.faculties?.name || career.faculties?.[0]?.name || '';
-              return (
-                <div key={career.id} style={{
-                  backgroundColor: 'white',
-                  borderRadius: 12,
-                  padding: '2rem 1.5rem',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                  border: '1px solid #e2e8f0',
-                  transition: 'all 0.3s ease',
-                  cursor: 'default',
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-                    <div style={{
-                      width: 48,
-                      height: 48,
-                      backgroundColor: '#e2e8f0',
-                      borderRadius: 12,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 20,
-                      color: '#2d3748',
-                      flexShrink: 0,
-                    }}>
-                      📚
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
-                        {facultyName}
-                      </p>
-                      <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1a202c', marginBottom: 8, lineHeight: 1.3 }}>
-                        {career.name}
-                      </h3>
-                      <p style={{ fontSize: 14, color: '#4a5568', lineHeight: 1.5 }}>
-                        Plan de estudios actualizado con estándares internacionales.
-                      </p>
+          {careers.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: '#718096' }}>
+              <p>No hay carreras disponibles en este momento.</p>
+            </div>
+          ) : (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+              gap: '1.5rem',
+            }}>
+              {careers.map((career: any) => {
+                // Intentar obtener el nombre de la facultad de diferentes formas
+                const facultyName = career.faculties?.name || career.faculty?.name || career.faculties?.[0]?.name || '';
+                return (
+                  <div key={career.id} style={{
+                    backgroundColor: 'white',
+                    borderRadius: 12,
+                    padding: '2rem 1.5rem',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                    border: '1px solid #e2e8f0',
+                    transition: 'all 0.3s ease',
+                    cursor: 'default',
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                      <div style={{
+                        width: 48,
+                        height: 48,
+                        backgroundColor: '#e2e8f0',
+                        borderRadius: 12,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 20,
+                        color: '#2d3748',
+                        flexShrink: 0,
+                      }}>
+                        📚
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+                          {facultyName || 'Facultad'}
+                        </p>
+                        <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1a202c', marginBottom: 8, lineHeight: 1.3 }}>
+                          {career.name}
+                        </h3>
+                        <p style={{ fontSize: 14, color: '#4a5568', lineHeight: 1.5 }}>
+                          Plan de estudios actualizado con estándares internacionales.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 

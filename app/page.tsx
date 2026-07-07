@@ -10,7 +10,7 @@ export default async function HomePage() {
     redirect('/dashboard')
   }
 
-  // Intentar obtener carreras desde Supabase (si no hay datos, la landing usará las predefinidas)
+  // Obtener carreras con su facultad
   const { data: careers } = await supabase
     .from('careers')
     .select('*, faculties(name)')
