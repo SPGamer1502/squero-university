@@ -48,9 +48,12 @@ export default async function AdminPage() {
         <div className="page-header" style={{ background: 'linear-gradient(135deg, #991b1b, #7f1d1d)' }}>
           <h1>🔧 Gestión de Alumnos</h1>
           <p>Asigna, edita y administra carreras y ciclos</p>
-          <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+          <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <Link href="/admin/professors" className="btn btn-warning btn-sm">
               👨‍🏫 Gestionar Profesores
+            </Link>
+            <Link href="/admin/cleanup" className="btn btn-danger btn-sm">
+              🧹 Limpiar almacenamiento
             </Link>
           </div>
         </div>
