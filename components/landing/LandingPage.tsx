@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 
 export default function LandingPage({ careers }: { careers: any[] }) {
   return (
@@ -34,8 +33,8 @@ export default function LandingPage({ careers }: { careers: any[] }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <Link href="#carreras" style={{ color: 'white', textDecoration: 'none', fontSize: 14 }}>Carreras</Link>
-          <Link href="#nosotros" style={{ color: 'white', textDecoration: 'none', fontSize: 14 }}>Nosotros</Link>
+          <Link href="#carreras" className="landing-nav-link">Carreras</Link>
+          <Link href="#nosotros" className="landing-nav-link">Nosotros</Link>
           <Link href="/login" className="btn btn-primary" style={{ backgroundColor: '#2d3748', color: 'white', padding: '8px 18px', borderRadius: 7, textDecoration: 'none', fontWeight: 600 }}>
             Aula Virtual
           </Link>
